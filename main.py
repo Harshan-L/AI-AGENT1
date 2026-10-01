@@ -1,4 +1,4 @@
-import os#myfirst
+import os#myfirst1
 
 from dotenv import load_dotenv
 from google import genai
