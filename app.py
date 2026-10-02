@@ -1,4 +1,5 @@
 import streamlit as st
+import streamlit.components.v1 as components
 from main import ask_gemini
 
 # ============================================================
@@ -58,9 +59,27 @@ html, body, [data-testid="stAppViewContainer"] {
     z-index: 0;
 }
 
-/* ── Hide Streamlit chrome ────────────────────────────────── */
-#MainMenu, footer, header { visibility: hidden; }
-[data-testid="stDeployButton"] { display: none; }
+/* ── Hide Streamlit chrome without hiding sidebar controls ── */
+#MainMenu, footer { visibility: hidden !important; display: none !important; }
+[data-testid="stDeployButton"] { display: none !important; }
+[data-testid="stDecoration"] { display: none !important; }
+[data-testid="stStatusWidget"] { display: none !important; }
+
+/* Keep header non-blocking and visible so toggle controls can be accessed */
+header[data-testid="stHeader"] {
+    background: transparent !important;
+    visibility: visible !important;
+    display: block !important;
+    z-index: 1000 !important;
+    pointer-events: none !important;
+}
+
+header[data-testid="stHeader"] button,
+header[data-testid="stHeader"] [data-testid="stExpandSidebarButton"],
+header[data-testid="stHeader"] [data-testid="stSidebarCollapsedControl"] {
+    pointer-events: auto !important;
+    visibility: visible !important;
+}
 
 /* ── Sidebar ──────────────────────────────────────────────── */
 [data-testid="stSidebar"] {
@@ -69,6 +88,90 @@ html, body, [data-testid="stAppViewContainer"] {
     backdrop-filter: blur(20px);
 }
 [data-testid="stSidebar"] * { color: var(--text-primary) !important; }
+
+/* ── Sidebar collapsed-state re-open button (>> Right Arrow) ── */
+[data-testid="stExpandSidebarButton"],
+button[data-testid="stExpandSidebarButton"],
+[data-testid="stSidebarCollapsedControl"],
+[data-testid="stSidebarCollapsedControl"] button {
+    display: inline-flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    position: fixed !important;
+    top: 14px !important;
+    left: 14px !important;
+    z-index: 999999 !important;
+    background: linear-gradient(135deg, rgba(124,58,237,0.4), rgba(6,182,212,0.3)) !important;
+    border: 1px solid rgba(124,58,237,0.7) !important;
+    border-radius: 10px !important;
+    color: #f1f5f9 !important;
+    min-width: 44px !important;
+    height: 44px !important;
+    padding: 0 10px !important;
+    cursor: pointer !important;
+    box-shadow: 0 4px 20px rgba(124,58,237,0.45) !important;
+    backdrop-filter: blur(12px) !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.25s ease !important;
+    pointer-events: auto !important;
+}
+
+[data-testid="stExpandSidebarButton"]:hover,
+button[data-testid="stExpandSidebarButton"]:hover,
+[data-testid="stSidebarCollapsedControl"]:hover,
+[data-testid="stSidebarCollapsedControl"] button:hover {
+    background: linear-gradient(135deg, rgba(124,58,237,0.7), rgba(6,182,212,0.5)) !important;
+    border-color: rgba(124,58,237,0.95) !important;
+    transform: scale(1.08) translateX(2px) !important;
+    box-shadow: 0 6px 26px rgba(124,58,237,0.6) !important;
+    color: #ffffff !important;
+}
+
+[data-testid="stExpandSidebarButton"] svg,
+button[data-testid="stExpandSidebarButton"] svg,
+[data-testid="stSidebarCollapsedControl"] svg {
+    fill: #f1f5f9 !important;
+    color: #f1f5f9 !important;
+    width: 24px !important;
+    height: 24px !important;
+}
+
+[data-testid="stExpandSidebarButton"] span,
+button[data-testid="stExpandSidebarButton"] span {
+    color: #f1f5f9 !important;
+    font-size: 1.4rem !important;
+}
+
+/* ── Custom Floating >> button ─────────────────────────────── */
+#custom-sidebar-toggle-btn {
+    position: fixed;
+    top: 14px;
+    left: 14px;
+    z-index: 999999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(124,58,237,0.4), rgba(6,182,212,0.3));
+    border: 1px solid rgba(124,58,237,0.7);
+    color: #f1f5f9;
+    font-size: 20px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(124,58,237,0.45);
+    backdrop-filter: blur(12px);
+    transition: all 0.25s ease;
+    user-select: none;
+}
+#custom-sidebar-toggle-btn:hover {
+    background: linear-gradient(135deg, rgba(124,58,237,0.7), rgba(6,182,212,0.5));
+    border-color: rgba(124,58,237,0.95);
+    transform: scale(1.08) translateX(2px);
+    box-shadow: 0 6px 26px rgba(124,58,237,0.6);
+}
 
 .sidebar-logo {
     display: flex;
@@ -535,6 +638,91 @@ html, body, [data-testid="stAppViewContainer"] {
 </style>
 """, unsafe_allow_html=True)
 
+# ── Sidebar Toggle Helper (Guarantees ">>" button appears when sidebar is closed) ──
+components.html("""
+<script>
+(function() {
+    function initSidebarToggle() {
+        try {
+            const parentDoc = window.parent.document;
+            if (!parentDoc) return;
+
+            let btn = parentDoc.getElementById('custom-sidebar-toggle-btn');
+            if (!btn) {
+                btn = parentDoc.createElement('button');
+                btn.id = 'custom-sidebar-toggle-btn';
+                btn.innerHTML = '&#187;'; // » symbol
+                btn.title = 'Show Sidebar';
+                btn.setAttribute('aria-label', 'Show Sidebar');
+                parentDoc.body.appendChild(btn);
+
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const target = parentDoc.querySelector('[data-testid="stExpandSidebarButton"]')
+                                || parentDoc.querySelector('button[data-testid="stExpandSidebarButton"]')
+                                || parentDoc.querySelector('[data-testid="stSidebarCollapsedControl"] button')
+                                || parentDoc.querySelector('[data-testid="stSidebarCollapsedControl"]')
+                                || parentDoc.querySelector('button[aria-label="Expand sidebar"]');
+                    if (target) {
+                        target.click();
+                    } else {
+                        const sb = parentDoc.querySelector('[data-testid="stSidebar"]');
+                        if (sb) {
+                            sb.setAttribute('aria-expanded', 'true');
+                        }
+                    }
+                });
+            }
+
+            function checkSidebar() {
+                const sb = parentDoc.querySelector('[data-testid="stSidebar"]');
+                const nativeBtn = parentDoc.querySelector('[data-testid="stExpandSidebarButton"]')
+                               || parentDoc.querySelector('button[data-testid="stExpandSidebarButton"]')
+                               || parentDoc.querySelector('[data-testid="stSidebarCollapsedControl"]');
+                
+                let isCollapsed = false;
+                if (sb) {
+                    const rect = sb.getBoundingClientRect();
+                    const style = window.parent.getComputedStyle(sb);
+                    isCollapsed = (
+                        sb.getAttribute('aria-expanded') === 'false' ||
+                        rect.width <= 10 ||
+                        rect.right <= 0 ||
+                        style.display === 'none' ||
+                        style.visibility === 'hidden'
+                    );
+                }
+
+                if (isCollapsed) {
+                    const nativeRect = nativeBtn ? nativeBtn.getBoundingClientRect() : null;
+                    const nativeIsVisible = nativeRect && nativeRect.width > 0 && nativeRect.height > 0;
+                    if (!nativeIsVisible) {
+                        btn.style.display = 'flex';
+                    } else {
+                        btn.style.display = 'none';
+                    }
+                } else {
+                    btn.style.display = 'none';
+                }
+            }
+
+            setInterval(checkSidebar, 300);
+            checkSidebar();
+        } catch (err) {
+            console.error('Sidebar toggle error:', err);
+        }
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initSidebarToggle);
+    } else {
+        initSidebarToggle();
+    }
+})();
+</script>
+""", height=0, width=0)
+
 # ============================================================
 # INITIALIZE SESSION STATE
 # ============================================================
@@ -602,9 +790,21 @@ with st.sidebar:
     </div>
     """, unsafe_allow_html=True)
 
-    # ── New Chat button ──────────────────────────────────────
+    # ── New Chat & Clear Chat controls ───────────────────────
     if st.button("✦  New Chat", use_container_width=True, key="new_chat_btn"):
         _new_chat()
+        st.rerun()
+
+    msg_count = len(st.session_state.messages)
+    st.markdown(f"""
+    <div style="text-align:center; margin: 10px 0 8px 0;">
+        <span class="msg-count">💬 {msg_count} message{'s' if msg_count != 1 else ''} in this chat</span>
+    </div>
+    """, unsafe_allow_html=True)
+
+    if st.button("🗑️ Clear Current Chat", use_container_width=True, key="clear_btn"):
+        st.session_state.messages = []
+        st.session_state.active_session_id = str(uuid.uuid4())
         st.rerun()
 
     st.markdown('<hr class="sidebar-divider">', unsafe_allow_html=True)
@@ -672,20 +872,6 @@ with st.sidebar:
         </div>
     </div>
     """, unsafe_allow_html=True)
-
-    st.markdown('<hr class="sidebar-divider">', unsafe_allow_html=True)
-
-    msg_count = len(st.session_state.messages)
-    st.markdown(f"""
-    <div style="text-align:center; margin-bottom: 10px;">
-        <span class="msg-count">💬 {msg_count} message{'s' if msg_count != 1 else ''} in this chat</span>
-    </div>
-    """, unsafe_allow_html=True)
-
-    if st.button("🗑️ Clear Current Chat", use_container_width=True, key="clear_btn"):
-        st.session_state.messages = []
-        st.session_state.active_session_id = str(uuid.uuid4())
-        st.rerun()
 
 # ============================================================
 # MAIN PAGE — Hero Header
