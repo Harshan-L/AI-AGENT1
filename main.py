@@ -1,4 +1,4 @@
-import os#myfirst1
+import os
 
 from dotenv import load_dotenv
 from google import genai
@@ -12,7 +12,6 @@ from tools import wikipedia_search, duckduckgo_search
 # ==========================================
 
 load_dotenv()
-
 
 
 # ==========================================
@@ -113,10 +112,10 @@ def execute_tool(function_name, arguments):
 
 def ask_gemini(prompt):
 
-    # --------------------------------------
+    # ======================================
     # STEP 1
     # Ask Gemini whether a tool is needed
-    # --------------------------------------
+    # ======================================
 
     response = client.models.generate_content(
         model=MODEL,
@@ -126,25 +125,24 @@ def ask_gemini(prompt):
         )
     )
 
-    # --------------------------------------
-    # Check if Gemini selected a tool
-    # --------------------------------------
+    # ======================================
+    # CHECK IF GEMINI SELECTED A TOOL
+    # ======================================
 
     function_calls = response.function_calls
 
-    # --------------------------------------
-    # No tool required
-    # --------------------------------------
+    # ======================================
+    # NO TOOL REQUIRED
+    # ======================================
 
     if not function_calls:
 
         return response.text
 
-
-    # --------------------------------------
+    # ======================================
     # STEP 2
-    # Execute the selected tool
-    # --------------------------------------
+    # EXECUTE SELECTED TOOLS
+    # ======================================
 
     tool_results = []
 
@@ -154,19 +152,11 @@ def ask_gemini(prompt):
 
         arguments = function_call.args
 
-        query = arguments.get("query", "")
-
-        print()
-        print(f"🔧 Tool selected: {function_name}")
-        print(f"🔎 Query: {query}")
-
-        # Execute the tool
         result = execute_tool(
             function_name,
             arguments
         )
 
-        # Store result
         tool_results.append(
             f"""
 Tool: {function_name}
@@ -176,19 +166,17 @@ Search Result:
 """
         )
 
-
-    # --------------------------------------
+    # ======================================
     # STEP 3
-    # Combine tool results
-    # --------------------------------------
+    # COMBINE TOOL RESULTS
+    # ======================================
 
     combined_results = "\n\n".join(tool_results)
 
-
-    # --------------------------------------
+    # ======================================
     # STEP 4
-    # Send results back to Gemini
-    # --------------------------------------
+    # SEND RESULTS BACK TO GEMINI
+    # ======================================
 
     final_prompt = f"""
 You are an AI assistant that can use external tools.
@@ -197,13 +185,11 @@ The user asked:
 
 {prompt}
 
-
 The following information was retrieved from external tools:
 
 ----------------------------------------
 {combined_results}
 ----------------------------------------
-
 
 Use the information above to answer the user's question.
 
@@ -215,64 +201,14 @@ IMPORTANT:
 - Give the user a clear and useful answer.
 """
 
-
-    # --------------------------------------
+    # ======================================
     # STEP 5
-    # Generate final answer
-    # --------------------------------------
+    # GENERATE FINAL ANSWER
+    # ======================================
 
     final_response = client.models.generate_content(
         model=MODEL,
         contents=final_prompt
     )
 
-
     return final_response.text
-
-
-# ==========================================
-# START AI AGENT
-# ==========================================
-
-print()
-print("======================================")
-print("        AI AGENT STARTED")
-print("======================================")
-print()
-print("Available tools:")
-print("1. Wikipedia")
-print("2. DuckDuckGo Web Search")
-print()
-print("Type 'exit' or 'quit' to stop.")
-print()
-
-
-# ==========================================
-# MAIN LOOP
-# ==========================================
-
-while True:
-
-    user_input = input("You: ")
-
-    # Exit
-    if user_input.lower() in ["exit", "quit"]:
-
-        print()
-        print("Goodbye!")
-        break
-
-
-    try:
-
-        answer = ask_gemini(user_input)
-
-        print()
-        print("Agent:", answer)
-        print()
-
-    except Exception as e:
-
-        print()
-        print("Error:", str(e))
-        print()

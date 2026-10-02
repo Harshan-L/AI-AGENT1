@@ -1,7 +1,6 @@
-langchain
-wikipedia
-langchain-community
+streamlit
 google-genai
-langchain-anthropic
 python-dotenv
-pydantic
+requests
+ddgs
+wikipedia

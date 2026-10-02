@@ -2,12 +2,14 @@ import requests
 from ddgs import DDGS
 
 
-# -----------------------------------
-# Wikipedia Search
-# -----------------------------------
+# ==========================================
+# WIKIPEDIA SEARCH
+# ==========================================
 
 def wikipedia_search(query):
+
     try:
+
         url = "https://en.wikipedia.org/w/rest.php/v1/search/page"
 
         params = {
@@ -22,6 +24,7 @@ def wikipedia_search(query):
         )
 
         if response.status_code != 200:
+
             return "Wikipedia search failed."
 
         data = response.json()
@@ -29,6 +32,7 @@ def wikipedia_search(query):
         results = []
 
         for page in data.get("pages", []):
+
             title = page.get("title", "")
             description = page.get("description", "")
             excerpt = page.get("excerpt", "")
@@ -40,31 +44,37 @@ def wikipedia_search(query):
             )
 
         if not results:
+
             return "No Wikipedia results found."
 
         return "\n".join(results)
 
     except Exception as e:
+
         return f"Wikipedia search failed: {str(e)}"
 
 
-# -----------------------------------
-# DuckDuckGo Search
-# -----------------------------------
+# ==========================================
+# DUCKDUCKGO SEARCH
+# ==========================================
 
 def duckduckgo_search(query):
+
     try:
+
         results = DDGS().text(
             query,
             max_results=5
         )
 
         if not results:
+
             return "No DuckDuckGo results found."
 
         output = []
 
         for result in results:
+
             title = result.get("title", "")
             body = result.get("body", "")
             href = result.get("href", "")
@@ -78,4 +88,5 @@ def duckduckgo_search(query):
         return "\n".join(output)
 
     except Exception as e:
+
         return f"DuckDuckGo search failed: {str(e)}"
