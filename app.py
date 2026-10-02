@@ -7,7 +7,7 @@ from main import ask_gemini
 # ============================================================
 
 st.set_page_config(
-    page_title="Harshan's AI Agent",
+    page_title="Welcome to AI Chatbot",
     page_icon="🤖",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -786,7 +786,7 @@ with st.sidebar:
     st.markdown("""
     <div class="sidebar-logo">
         <span class="sidebar-logo-icon">✦</span>
-        <span class="sidebar-logo-text">Harshan's AI Agent</span>
+        <span class="sidebar-logo-text">Harshan's AI Chatbot</span>
     </div>
     """, unsafe_allow_html=True)
 
@@ -833,7 +833,7 @@ with st.sidebar:
 
     st.markdown('<hr class="sidebar-divider">', unsafe_allow_html=True)
 
-    # ── What This Agent Can Do ────────────────────────────────
+    # ── What This Chatbot Can Do ────────────────────────────────
     st.markdown('<p class="sidebar-section-title">🚀 What I Can Do</p>', unsafe_allow_html=True)
     st.markdown("""
     <div class="can-do-item">
@@ -882,9 +882,9 @@ if len(st.session_state.messages) == 0:
     <div class="hero-container">
         <div class="hero-badge">
             <span class="hero-badge-dot"></span>
-            AI AGENT ONLINE
+            AI CHATBOT ONLINE
         </div>
-        <h1 class="hero-title">Harshan's AI Agent</h1>
+        <h1 class="hero-title">Welcome to AI Chatbot</h1>
         <p class="hero-subtitle">
             Ask anything — I search the web, look up Wikipedia,
             and reason through complex questions in real time.
